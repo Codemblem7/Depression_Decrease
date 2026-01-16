@@ -1,11 +1,278 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
-</head>
-<body>
-    <h1>Hello World</h1>
-</body>
-</html>
+import React, { useState } from 'react';
+import { Lock, Mail, User, LogOut, CheckCircle } from 'lucide-react';
+
+export default function LoginSystem() {
+  const [view, setView] = useState('login');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [users, setUsers] = useState([
+    { email: 'demo@example.com', password: 'demo123', name: 'Demo User' }
+  ]);
+  
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleLogin = () => {
+    setError('');
+    
+    const user = users.find(u => u.email === loginForm.email && u.password === loginForm.password);
+    
+    if (user) {
+      setIsLoggedIn(true);
+      setCurrentUser(user);
+      setLoginForm({ email: '', password: '' });
+      setSuccess('Login successful!');
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setError('Invalid email or password');
+    }
+  };
+
+  const handleRegister = () => {
+    setError('');
+    
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (registerForm.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    if (users.find(u => u.email === registerForm.email)) {
+      setError('Email already registered');
+      return;
+    }
+    
+    const newUser = {
+      name: registerForm.name,
+      email: registerForm.email,
+      password: registerForm.password
+    };
+    
+    setUsers([...users, newUser]);
+    setSuccess('Registration successful! Please login.');
+    setRegisterForm({ name: '', email: '', password: '', confirmPassword: '' });
+    setTimeout(() => {
+      setSuccess('');
+      setView('login');
+    }, 2000);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setSuccess('Logged out successfully');
+    setTimeout(() => setSuccess(''), 3000);
+  };
+
+  if (isLoggedIn && currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          </div>
+          
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
+              <CheckCircle size={18} />
+              {success}
+            </div>
+          )}
+          
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white mb-6">
+            <h3 className="text-2xl font-semibold mb-2">Welcome back, {currentUser.name}!</h3>
+            <p className="text-indigo-100">{currentUser.email}</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="font-semibold text-blue-900 mb-2">Profile</h4>
+              <p className="text-sm text-blue-700">Manage your account settings</p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h4 className="font-semibold text-purple-900 mb-2">Analytics</h4>
+              <p className="text-sm text-purple-700">View your dashboard stats</p>
+            </div>
+            <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+              <h4 className="font-semibold text-indigo-900 mb-2">Settings</h4>
+              <p className="text-sm text-indigo-700">Configure preferences</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-md">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
+          <h1 className="text-3xl font-bold text-center">Welcome</h1>
+          <p className="text-center text-indigo-100 mt-2">
+            {view === 'login' ? 'Login to your account' : 'Create a new account'}
+          </p>
+        </div>
+        
+        <div className="p-8">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm flex items-center gap-2">
+              <CheckCircle size={18} />
+              {success}
+            </div>
+          )}
+          
+          {view === 'login' ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="you@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              
+              <button
+                onClick={handleLogin}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition transform hover:scale-105"
+              >
+                Login
+              </button>
+              
+              <p className="text-center text-sm text-gray-600 mt-4">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setView('register'); setError(''); }}
+                  className="text-indigo-600 font-semibold hover:underline"
+                >
+                  Register
+                </button>
+              </p>
+              
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                <p className="text-blue-800 font-medium">Demo credentials:</p>
+                <p className="text-blue-700">Email: demo@example.com</p>
+                <p className="text-blue-700">Password: demo123</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    value={registerForm.name}
+                    onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="John Doe"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="email"
+                    value={registerForm.email}
+                    onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="you@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="password"
+                    value={registerForm.password}
+                    onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="password"
+                    value={registerForm.confirmPassword}
+                    onChange={(e) => setRegisterForm({...registerForm, confirmPassword: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              
+              <button
+                onClick={handleRegister}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition transform hover:scale-105"
+              >
+                Register
+              </button>
+              
+              <p className="text-center text-sm text-gray-600 mt-4">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setView('login'); setError(''); }}
+                  className="text-indigo-600 font-semibold hover:underline"
+                >
+                  Login
+                </button>
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
